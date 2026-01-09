@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Council Agent | Strategic Decision Council</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            background: linear-gradient(to right, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .agents-section {
+            margin-top: 2rem;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed var(--glass-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-container {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 3rem;
+        }
+
+        .agent-output {
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .markdown-content {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .markdown-content h2 {
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.5rem;
+            color: white;
+        }
+
+        .markdown-content h3 {
+            font-size: 1.1rem;
+            margin: 1.25rem 0 0.5rem;
+            color: #818cf8;
+        }
+
+        .markdown-content ul {
+            padding-left: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .final-decision {
+            border-left: 4px solid var(--secondary);
+            padding-left: 1.5rem;
+            background: rgba(236, 72, 153, 0.05);
+            border-radius: 0 1rem 1rem 0;
+            padding: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            header h1 { font-size: 2.2rem; }
+            .container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Council of Agents</h1>
+            <p>Gather specialized AI perspectives for your most critical decisions.</p>
+        </header>
+
+        <div class="glass-card" id="main-form">
+            <div class="form-group">
+                <label for="goal">What is your main goal?</label>
+                <textarea id="goal" rows="2" placeholder="e.g., Retire by age 45 and travel the world..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="context">Current Context & Background</label>
+                <textarea id="context" rows="4" placeholder="Mention your current situation, skills, and any constraints..."></textarea>
+            </div>
+
+            <div class="agent-grid" id="agent-grid">
+                <!-- Agents will be dynamically added here -->
+            </div>
+
+            <button class="btn btn-primary" id="run-btn">Assemble Council & Execute</button>
+        </div>
+
+        <div class="loading-container" id="loading">
+            <span class="loader"></span>
+            <p style="margin-top: 1rem; color: var(--text-muted);">Consulting the agents. This may take a minute...</p>
+        </div>
+
+        <div class="results" id="results">
+            <h2 style="margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">Council Proceedings</h2>
+            <div id="agent-outputs"></div>
+            
+            <div class="glass-card final-decision">
+                <h2 style="color: var(--secondary); margin-bottom: 1.5rem; display: flex; align-items: center;">
+                    <svg style="width: 24px; height: 24px; margin-right: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Final Council Recommendation
+                </h2>
+                <div id="final-output" class="markdown-content"></div>
+            </div>
+
+            <button class="btn" style="background: rgba(255,255,255,0.05); color: white; width: auto;" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">Back to Top</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const defaultAgents = [
+            { name: "Realist", role: "Focuses on feasibility, timelines, and logistical realities." },
+            { name: "Critic", role: "Identifies risks, challenges assumptions, and plays devil's advocate." },
+            { name: "Coach", role: "Monitors sustainability, burnout, and mental load." }
+        ];
+
+        function initAgents() {
+            const grid = document.getElementById('agent-grid');
+            defaultAgents.forEach((agent, index) => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.innerHTML = `
+                    <div class="form-group">
+                        <label>Agent Name</label>
+                        <input type="text" value="${agent.name}" class="agent-name">
+                    </div>
+                    <div class="form-group">
+                        <label>Role/Perspective</label>
+                        <textarea rows="2" class="agent-role">${agent.role}</textarea>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function runCouncil() {
+            const goal = document.getElementById('goal').value;
+            const context = document.getElementById('context').value;
+            const btn = document.getElementById('run-btn');
+            
+            if (!goal || !context) {
+                alert("Please fill in both your goal and context.");
+                return;
+            }
+
+            const agents = Array.from(document.querySelectorAll('.agent-card')).map(card => ({
+                name: card.querySelector('.agent-name').value,
+                role: card.querySelector('.agent-role').value
+            }));
+
+            // UI State change
+            document.getElementById('main-form').style.opacity = '0.5';
+            btn.disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const response = await fetch('/council', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        goal,
+                        context,
+                        horizon_days: 365,
+                        resources: "Provided in context", // Simplified for UI
+                        nonnegotiables: "None specified",
+                        tradeoffs: "Willing to discuss",
+                        agents
+                    })
+                });
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error(error);
+                alert("Something went wrong. Is the server running?");
+            } finally {
+                document.getElementById('main-form').style.opacity = '1';
+                btn.disabled = false;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            const outputsContainer = document.getElementById('agent-outputs');
+            outputsContainer.innerHTML = '';
+            
+            data.agents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'glass-card agent-output';
+                card.innerHTML = `
+                    <div class="badge">${agent.role}</div>
+                    <h3>${agent.name} Perspective</h3>
+                    <div class="markdown-content">${marked.parse(agent.output)}</div>
+                `;
+                outputsContainer.appendChild(card);
+            });
+
+            document.getElementById('final-output').innerHTML = marked.parse(data.final);
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.getElementById('run-btn').addEventListener('click', runCouncil);
+        window.onload = initAgents;
+    </script>
+</body>
+</html>
