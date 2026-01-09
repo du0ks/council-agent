@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Council Agent | Strategic Decision Council</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary: #6366f1;
@@ -31,7 +34,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg);
-            background-image: 
+            background-image:
                 radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
             color: var(--text);
@@ -40,7 +43,10 @@
             overflow-x: hidden;
         }
 
-        h1, h2, h3, h4 {
+        h1,
+        h2,
+        h3,
+        h4 {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
         }
@@ -53,8 +59,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         header {
@@ -103,7 +116,9 @@
             letter-spacing: 0.05em;
         }
 
-        input, textarea, select {
+        input,
+        textarea,
+        select {
             width: 100%;
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid var(--glass-border);
@@ -115,7 +130,8 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input:focus, textarea:focus {
+        input:focus,
+        textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
@@ -191,8 +207,13 @@
         }
 
         @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .results {
@@ -251,11 +272,17 @@
         }
 
         @media (max-width: 640px) {
-            header h1 { font-size: 2.2rem; }
-            .container { padding: 1rem; }
+            header h1 {
+                font-size: 2.2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -271,7 +298,8 @@
 
             <div class="form-group">
                 <label for="context">Current Context & Background</label>
-                <textarea id="context" rows="4" placeholder="Mention your current situation, skills, and any constraints..."></textarea>
+                <textarea id="context" rows="4"
+                    placeholder="Mention your current situation, skills, and any constraints..."></textarea>
             </div>
 
             <div class="agent-grid" id="agent-grid">
@@ -287,20 +315,24 @@
         </div>
 
         <div class="results" id="results">
-            <h2 style="margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">Council Proceedings</h2>
+            <h2 style="margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">Council
+                Proceedings</h2>
             <div id="agent-outputs"></div>
-            
+
             <div class="glass-card final-decision">
                 <h2 style="color: var(--secondary); margin-bottom: 1.5rem; display: flex; align-items: center;">
-                    <svg style="width: 24px; height: 24px; margin-right: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <svg style="width: 24px; height: 24px; margin-right: 12px;" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     Final Council Recommendation
                 </h2>
                 <div id="final-output" class="markdown-content"></div>
             </div>
 
-            <button class="btn" style="background: rgba(255,255,255,0.05); color: white; width: auto;" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">Back to Top</button>
+            <button class="btn" style="background: rgba(255,255,255,0.05); color: white; width: auto;"
+                onclick="window.scrollTo({top: 0, behavior: 'smooth'})">Back to Top</button>
         </div>
     </div>
 
@@ -335,7 +367,7 @@
             const goal = document.getElementById('goal').value;
             const context = document.getElementById('context').value;
             const btn = document.getElementById('run-btn');
-            
+
             if (!goal || !context) {
                 alert("Please fill in both your goal and context.");
                 return;
@@ -382,7 +414,7 @@
         function displayResults(data) {
             const outputsContainer = document.getElementById('agent-outputs');
             outputsContainer.innerHTML = '';
-            
+
             data.agents.forEach(agent => {
                 const card = document.createElement('div');
                 card.className = 'glass-card agent-output';
@@ -403,4 +435,5 @@
         window.onload = initAgents;
     </script>
 </body>
+
 </html>
