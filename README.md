@@ -1,62 +1,67 @@
-# 🏛️ Council Agent
+# Council Agent
 
-A sophisticated multi-agent decision-support system powered by **Google Gemini**. Get strategic, multifaceted perspectives on your most critical goals through a structured two-round deliberation process.
+A small FastAPI app that sends a personal goal to a "council" of LLM agents with different viewpoints, lets them critique each other, and has a moderator turn the result into a 7-day plan.
 
-![Premium UI](https://img.shields.io/badge/UI-Glassmorphism-blueviolet)
-![Engine](https://img.shields.io/badge/Engine-Gemini%202.5%20Flash-blue)
+## Why I built it
 
-## ✨ Features
+When I'm thinking through a big decision, a single LLM answer tends to be one-sided. I wanted to see what happens if I force a few different perspectives, make them argue with each other once, and then ask for one concrete plan.
 
-- **Multi-Agent Council**: Consult with a specialized panel. By default, it includes:
-  - **The Realist**: Focuses on feasibility, logistics, and practical timelines.
-  - **The Critic**: Challenges assumptions, identifies hidden risks, and plays devil's advocate.
-  - **The Coach**: Protects your mental load, sustainability, and long-term wellbeing.
-- **Dynamic Roles**: Customize your council! Define your own agents on the fly (e.g., "Skeptical Investor", "Stoic Philosopher").
-- **Two-Round Deliberation**:
-  - **Round 1**: Initial independent analysis from each agent.
-  - **Round 2**: Cross-critique where agents review and refine each other's advice.
-- **Final Moderation**: A central moderator synthesizes all perspectives into a 7-day action plan.
-- **Premium Web Interface**: Responsive, modern Glassmorphism-styled UI for seamless interaction.
+## How it works
 
-## 🚀 Getting Started
+Every agent is a call to Google Gemini (`gemini-2.5-flash`) with its own system prompt. A request goes through three steps in `app/orchestrator.py`:
 
-### 1. Prerequisites
-- Python 3.10+
-- A Google Gemini API Key
+1. **Round 1.** Each agent gets the goal, context, time horizon, resources, non-negotiables and acceptable trade-offs, and must answer in a fixed format: up to 3 assumptions, up to 3 key questions, exactly 3 recommendations and exactly 2 red flags.
+2. **Round 2.** Each agent sees the other agents' round 1 answers, names the weakest point in them, and revises its own recommendation.
+3. **Moderator.** One more call gets both rounds from every agent and returns 3 main conclusions, a day-by-day 7-day action plan, 2 risks with mitigations, and one success metric.
 
-### 2. Installation
-Clone the repository and install dependencies:
+With N agents that is 2N + 1 Gemini calls, run one after another.
+
+There are three built-in agents in `app/agents.py`: Realist (feasibility, timelines, logistics), Critic (challenges assumptions, looks for hidden risks) and Compassionate Coach (sustainability, burnout, mental load). A request can instead pass its own list of agents as name + role pairs; those get a generic system prompt built from the role, with the same output format.
+
+The web page at `/` is a single HTML file. It has fields for the goal and context and three editable agent cards (name and role), and it renders the Markdown answers with marked.js. Because the page always sends the three cards as custom agents, the longer built-in prompts are only used when calling the API without an `agents` field.
+
+## API
+
+- `POST /council` takes `goal`, `context`, `resources`, `nonnegotiables`, `tradeoffs`, optional `horizon_days` (default 365) and optional `agents: [{name, role}]`. It returns each agent's round 1 and round 2 output and the moderator's final answer.
+- `GET /health` returns `{"status": "healthy"}`.
+- FastAPI's interactive docs are at `/docs`, with an example request filled in.
+
+## Tech stack
+
+Python, FastAPI, Pydantic, Uvicorn, google-generativeai (Gemini), plain HTML/CSS/JavaScript with marked.js.
+
+## Running it
+
+You need Python 3.10+ (the code uses `X | None` type hints) and a Gemini API key.
+
 ```bash
-git clone https://github.com/du0ks/council-agent.git
-cd council-agent
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 3. Set API Key
-Export your Gemini API key to your environment:
-```bash
-export GEMINI_API_KEY="your-api-key-here"
-```
-
-### 4. Run the Application
-Start the FastAPI server:
-```bash
+export GEMINI_API_KEY="your-key"
 uvicorn app.main:app --reload
 ```
-Once running, open your browser and navigate to:
-**[http://localhost:8000](http://localhost:8000)**
 
-## 🛠️ Technology Stack
-- **Backend**: FastAPI (Python)
-- **AI Engine**: Google Gemini API (`gemini-2.5-flash`)
-- **Frontend**: Vanilla HTML5, CSS3 (Glassmorphism), JavaScript
-- **Markdown**: Marked.js for real-time rendering
+Then open http://localhost:8000.
 
-## 📝 Usage Tips
-- **Be Specific**: Provide as much context as possible in the context box for better results.
-- **Customize Agents**: Don't stick to the defaults! Try adding a "Financial Optimizer" or a "Legal Auditor" for specialized goals.
+If `GEMINI_API_KEY` is not set, the server still starts and prints a warning, but `/council` will fail when it tries to call Gemini.
 
----
-*Created with ❤️ by du0ks*
+## Project structure
+
+```
+app/
+  main.py          FastAPI app, request/response models, routes
+  orchestrator.py  round 1, round 2 and moderator flow
+  agents.py        agent definitions and prompt templates
+  llm_client.py    Gemini call
+  static/index.html  web UI
+```
+
+## Limitations and next steps
+
+- All Gemini calls are sequential and the endpoint is synchronous, so a run with three agents takes 7 calls and can take a while. Round 1 and round 2 calls could run in parallel.
+- No error handling around the Gemini calls; one failed call fails the whole request.
+- The web UI hard-codes `resources`, `nonnegotiables` and `tradeoffs` with placeholder values and always shows exactly three agents. Only the API exposes all fields.
+- During development I used a deterministic stub instead of Gemini (`llm_stub.py`). Its source is no longer in the repo, but its compiled `.pyc` is still in the committed `app/__pycache__/` folder, which should be removed and git-ignored.
+- `google-generativeai` is unpinned in `requirements.txt`.
+- No tests.
